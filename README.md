@@ -13,13 +13,13 @@ scrollView.pagingDelegate = delegate;
 scrollView.page = 0;
 ``` 
 
-then implement the ''delegate'' methods:
+then implement the delegate methods:
 
 ```objc
 - (UIView *)scrollView:(UIScrollView *)scrollView viewForPage:(int)page {
 	// returns view for a page 
 }
 - (int)numberOfPagesInScrollView:(UIScrollView *)scrollView {
-    // returns number of pages in a view
+    // returns number of pages
 }
 ```
