@@ -76,10 +76,10 @@
 		5AAF7B2115FE607800D2F025 /* FXPagingDemo */ = {
 			isa = PBXGroup;
 			children = (
-				5AAF7B3215FE60A900D2F025 /* FXPagingDelegate.h */,
 				5AAF7B2A15FE607800D2F025 /* AppDelegate.h */,
 				5AAF7B2B15FE607800D2F025 /* AppDelegate.m */,
 				5AAF7B2215FE607800D2F025 /* Supporting Files */,
+				5AAF7B3215FE60A900D2F025 /* FXPagingDelegate.h */,
 				5AED117815FE6B1300F99678 /* UIScrollView+FXPaging.h */,
 				5AED117915FE6B1300F99678 /* UIScrollView+FXPaging.m */,
 			);

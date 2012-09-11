@@ -29,101 +29,131 @@ int _page = -1;
 int _prevPage;
 int _nextPage;
 int _numberOfPages = -1;
+BOOL _nextPageVisible = NO;
 
 - (id<FXPagingDelegate>)pagingDelegate {
-    return _pagingDelegate;
+  return _pagingDelegate;
 }
 
 - (void)setPagingDelegate:(id<FXPagingDelegate>)delegate {
-    self.pagingEnabled = YES;
-    self.showsHorizontalScrollIndicator = NO;
-    self.showsVerticalScrollIndicator = NO;
-    self.delegate = self;
-    _pagingDelegate = delegate;
+  self.showsHorizontalScrollIndicator = NO;
+  self.showsVerticalScrollIndicator = NO;
+  self.delegate = self;
+  _pagingDelegate = delegate;
+  
 #if NO_ARC
-    [_pagingDelegate retain];
+  [_pagingDelegate retain];
 #endif
-
-    self.contentSize = CGSizeMake(self.frame.size.width * 3, self.frame.size.height);
 }
 
 -(void)reloadData {
-    _numberOfPages = [_pagingDelegate numberOfPagesInScrollView:self];
-    for (UIView *view in [self subviews]) {
-        [view removeFromSuperview];
-    }
+  _numberOfPages = [_pagingDelegate numberOfPagesInScrollView:self];
+  for (UIView *view in [self subviews]) {
+    [view removeFromSuperview];
+  }
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)sender {
-    double fractpart, intpart;
-    
-    fractpart = modf(self.contentOffset.x / self.frame.size.width, &intpart);
-    if (intpart != 1.0 && fractpart < 0.07) {
-        intpart < 1.0 ? (self.page = _prevPage) : (self.page = _nextPage);
+  if (_numberOfPages == -1) { // initialized
+    return;
+  }
+  
+  double fractpart, intpart;
+  
+  fractpart = modf(self.contentOffset.x / self.frame.size.width, &intpart);
+  
+  if (intpart != 1.0) {
+    if (fractpart < 0.1) {
+      intpart < 1.0 ? (self.page = _prevPage) : (self.page = _nextPage);
     }
+  
+  } else if (_numberOfPages == 2) {
+    if (fractpart > 0.01 && _nextPageVisible == NO) {
+      [self loadPage:_nextPage atPosition:2];
+      _nextPageVisible = YES;
+    }
+  }
 }
 
-
 - (int)page {
-    return _page;
+  return _page;
 }
 
 - (void)setPage:(int)page {
-    if (page == _page) {
-        return;
+  if (page == _page) {
+    return;
+  }
+  
+  if (_numberOfPages == -1) {
+    _numberOfPages = [_pagingDelegate numberOfPagesInScrollView:self];
+    
+    if (_numberOfPages > 1) {
+      self.pagingEnabled = YES;
+      self.contentSize = CGSizeMake(self.frame.size.width * 3, self.frame.size.height);
+    } else {
+      self.pagingEnabled = NO;
     }
-    
-    if (_numberOfPages == -1) {
-        _numberOfPages = [_pagingDelegate numberOfPagesInScrollView:self];
+  }
+  
+  if (_numberOfPages == 0) {
+    return;
+  }
+  
+  _page = page;
+  _prevPage = _page - 1 < 0 ? _numberOfPages - 1 : _page - 1;
+  _nextPage = _page + 1 == _numberOfPages ? 0 : _page + 1;
+  
+  for (UIView *view in [self subviews]) {
+    int tag = view.tag - PAGE_TAG;
+    if (tag != _page && tag != _prevPage && tag != _nextPage) {
+      [view removeFromSuperview];
+      if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidUnload:)]) {
+        [_pagingDelegate scrollView:self pageDidUnload:tag];
+      }
     }
-    
-    _page = page;
-    _prevPage = _page - 1 < 0 ? _numberOfPages - 1 : _page - 1;
-    _nextPage = _page + 1 == _numberOfPages ? 0 : _page + 1;
-    
-    for (UIView *view in [self subviews]) {
-        int tag = view.tag - PAGE_TAG;
-        if (tag != _page && tag != _prevPage && tag != _nextPage) {
-            [view removeFromSuperview];
-            if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidUnload:)]) {
-                [_pagingDelegate scrollView:self pageDidUnload:tag];
-            }
-        }
-    }
-    
+  }
+  
+  if (_numberOfPages == 1) {
+    [self loadPage:_page atPosition:0];
+  } else if (_numberOfPages == 2) {
+    [self loadPage:_prevPage atPosition:0];
+    [self loadPage:page atPosition:1];
+    _nextPageVisible = NO;
+  } else {
     [self loadPage:_prevPage atPosition:0];
     [self loadPage:_nextPage atPosition:2];
     [self loadPage:_page atPosition:1];
-    
-    CGRect frame = self.frame;
-    frame.origin.x = frame.size.width;
-    frame.origin.y = 0;
-    [self scrollRectToVisible:frame animated:NO];
-    
-    if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidChange:)]) {
-        [_pagingDelegate scrollView:self pageDidChange:page];
-    }
+  }
+
+  CGRect frame = self.frame;
+  frame.origin.x = frame.size.width;
+  frame.origin.y = 0;
+  [self scrollRectToVisible:frame animated:NO];
+
+  if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidChange:)]) {
+    [_pagingDelegate scrollView:self pageDidChange:page];
+  }
 }
 
 - (void)loadPage:(int)page atPosition:(int)position {
-    int tag =  page + PAGE_TAG;
-    UIView *view = [self viewWithTag:tag];
-    if (!view) {
-        view = [_pagingDelegate scrollView:self viewForPage:page];
-        view.tag = tag;
-        [self addSubview:view];
-    }
-    
-    CGRect frame = self.frame;
-    frame.origin.x = frame.size.width * position;
-    frame.origin.y = 0;
-    view.frame = frame;
+  int tag =  page + PAGE_TAG;
+  UIView *view = [self viewWithTag:tag];
+  if (!view) {
+    view = [_pagingDelegate scrollView:self viewForPage:page];
+    view.tag = tag;
+    [self addSubview:view];
+  }
+  
+  CGRect frame = self.frame;
+  frame.origin.x = frame.size.width * position;
+  frame.origin.y = 0;
+  view.frame = frame;
 }
 
 #if EGO_NO_ARC
 -(void) dealloc {
-    [_pagingDelegate release];
-    [super dealloc];
+  [_pagingDelegate release];
+  [super dealloc];
 }
 #endif
 @end
