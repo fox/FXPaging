@@ -89,7 +89,7 @@
 }
 
 - (int)numberOfPagesInScrollView:(UIScrollView *)scrollView {
-  return 2;
+  return 10;
 }
 
 @end
