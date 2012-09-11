@@ -47,8 +47,6 @@ BOOL _nextPageVisible = NO;
   for (UIView *view in [self subviews]) {
     [view removeFromSuperview];
   }
-  
-  [self addObserver:self forKeyPath:@"delegate" options:NSKeyValueObservingOptionNew context:nil];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)sender {
