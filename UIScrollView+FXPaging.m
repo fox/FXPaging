@@ -10,8 +10,7 @@
 #import "FXPagingDelegate.h"
 
 @interface UIScrollView (PrivateMethods)
-- (void)loadPage:(int)page;
-- (void)unloadPage:(int)page;
+- (void)loadPage:(int)page atPosition:(int)pos;
 @end
 
 @implementation UIScrollView (Paging)
@@ -40,13 +39,29 @@ BOOL _nextPageVisible = NO;
   _nextPageVisible = NO;
 }
 
--(void)reloadData {
+-(void)reloadAllPages {
   _pagingInitialized = NO;
   _page = -1;
   _nextPageVisible = NO;
   for (UIView *view in [self subviews]) {
+    int page = view.tag - PAGE_TAG;
     [view removeFromSuperview];
+    if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidUnload:)]) {
+      [_pagingDelegate scrollView:self pageDidUnload:page];
+    }
   }
+}
+
+- (void)reloadPage {
+  int tag =  _page + PAGE_TAG;
+  UIView *view = [self viewWithTag:tag];
+  if (view) {
+    [view removeFromSuperview];
+    if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidUnload:)]) {
+      [_pagingDelegate scrollView:self pageDidUnload:_page];
+    }
+  }
+  [self loadPage:_page atPosition:1];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)sender {
