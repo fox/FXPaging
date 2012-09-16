@@ -10,9 +10,9 @@
 
 @protocol FXPagingDelegate<NSObject>
 @required
-- (int) numberOfPagesInScrollView:(UIScrollView *) scrollView;
-- (UIView *) scrollView:(UIScrollView *) scrollView viewForPage:(int)page;
+- (NSInteger) numberOfPagesInScrollView:(UIScrollView *) scrollView;
+- (UIView *) scrollView:(UIScrollView *) scrollView viewForPage:(NSInteger)page;
 @optional
-- (void) scrollView:(UIScrollView *)scrollView pageDidChange:(int)page;
-- (void) scrollView:(UIScrollView *)scrollView pageDidUnload:(int)page;
+- (void) scrollView:(UIScrollView *)scrollView didRemoveViewForPage:(NSInteger)page;
+- (void) scrollView:(UIScrollView *)scrollView didChangePage:(NSInteger)page;
 @end

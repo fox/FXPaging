@@ -10,8 +10,8 @@
 #import "FXPagingDelegate.h"
 
 @interface UIScrollView (FXPaging) <UIScrollViewDelegate>
-@property (weak, nonatomic) id<FXPagingDelegate> pagingDelegate;
-@property (nonatomic) int page;
-- (void) reloadAllPages;
-- (void) reloadPage;
+@property (strong, nonatomic) id<FXPagingDelegate> pagingDelegate;
+@property (nonatomic) NSInteger page;
+@property (nonatomic) BOOL endlessPaging;
+- (void) reloadPages;
 @end

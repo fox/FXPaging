@@ -1,165 +1,260 @@
 //
-//  UIScrollView+FXPaging.m
-//  FXPaging
+//    UIScrollView+FXPaging.m
+//    FXPaging
 //
-//  Created by Saša Branković on 8.9.2012..
-//  Copyright (c) 2012. Saša Branković. All rights reserved.
+//    Created by Saša Branković on 8.9.2012..
+//    Copyright (c) 2012. Saša Branković. All rights reserved.
 //
 
 #import "UIScrollView+FXPaging.h"
 #import "FXPagingDelegate.h"
-
-@interface UIScrollView (PrivateMethods)
-- (void)loadPage:(int)page atPosition:(int)pos;
-@end
-
-@implementation UIScrollView (Paging)
+#import <objc/runtime.h>
 
 #define PAGE_TAG 100
 
-id<FXPagingDelegate> _pagingDelegate;
-int _page = -1;
-int _prevPage;
-int _nextPage;
-int _numberOfPages;
-BOOL _pagingInitialized = NO;
-BOOL _nextPageVisible = NO;
+@interface FXPagingState : NSObject
+@property (nonatomic) NSInteger page;
+@property (nonatomic) char position;
+@property (nonatomic) BOOL endlessPaging;
+@property (nonatomic) NSInteger numberOfPages;
+@property (nonatomic) BOOL previousPageVisible;
+@property (strong, nonatomic) id<FXPagingDelegate> pagingDelegate;
+@property (nonatomic) BOOL initialized;
+@end
 
-- (id<FXPagingDelegate>)pagingDelegate {
-  return _pagingDelegate;
-}
+@implementation FXPagingState
+@synthesize page;
+@synthesize position;
+@synthesize endlessPaging;
+@synthesize numberOfPages;
+@synthesize previousPageVisible;
+@synthesize pagingDelegate;
+@synthesize initialized;
 
-- (void)setPagingDelegate:(id<FXPagingDelegate>)d {
-  self.showsHorizontalScrollIndicator = NO;
-  self.showsVerticalScrollIndicator = NO;
-  self.delegate = self;
-  _pagingDelegate = d;
-  _pagingInitialized = NO;
-  _page = -1;
-  _nextPageVisible = NO;
-}
-
--(void)reloadAllPages {
-  _pagingInitialized = NO;
-  _page = -1;
-  _nextPageVisible = NO;
-  for (UIView *view in [self subviews]) {
-    int page = view.tag - PAGE_TAG;
-    [view removeFromSuperview];
-    if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidUnload:)]) {
-      [_pagingDelegate scrollView:self pageDidUnload:page];
+- (id)init {
+    self = [super init];
+    if (self) {
+        self.numberOfPages = -1;
+        self.page = -1;
     }
-  }
+    return self;
 }
 
-- (void)reloadPage {
-  int tag =  _page + PAGE_TAG;
-  UIView *view = [self viewWithTag:tag];
-  if (view) {
-    [view removeFromSuperview];
-    if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidUnload:)]) {
-      [_pagingDelegate scrollView:self pageDidUnload:_page];
+- (void)dealloc {
+    self.pagingDelegate = nil;
+    [super dealloc];
+}
+@end
+
+@interface UIScrollView (PrivateMethods)
+- (void)addViewForPage:(int)page atPosition:(int)position;
+- (FXPagingState *) pagingState;
+@property (nonatomic, readonly) NSInteger nextPage;
+@property (nonatomic, readonly) NSInteger previousPage;
+@property (nonatomic, readonly) NSInteger numberOfPages;
+@property (nonatomic) char position;
+@property (nonatomic) BOOL initialized;
+@end
+
+static char pagingStateKey;
+
+@implementation UIScrollView (FXPaging)
+
+- (FXPagingState *)pagingState {
+    FXPagingState *state = (FXPagingState *)objc_getAssociatedObject(self, &pagingStateKey);
+    if (!state) {
+        state = [[[FXPagingState alloc] init] autorelease];
+        self.pagingState = state;
     }
-  }
-  [self loadPage:_page atPosition:1];
+    return state;
+}
+
+- (NSInteger) numberOfPages {
+    if (self.pagingState.numberOfPages == -1) {
+        self.pagingState.numberOfPages = [self.pagingDelegate numberOfPagesInScrollView:self];
+    }
+    return self.pagingState.numberOfPages;
+}
+
+- (void) setPagingState:(FXPagingState *)pagingState {
+    objc_setAssociatedObject(self, &pagingStateKey, pagingState, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (void)setPagingDelegate:(id<FXPagingDelegate>)delegate {
+    self.pagingState.pagingDelegate = delegate;
+}
+
+- (id<FXPagingDelegate>) pagingDelegate {
+    return self.pagingState.pagingDelegate;
+}
+
+- (BOOL)initialized {
+    return self.pagingState.initialized;
+}
+
+- (void)setInitialized:(BOOL)initialized {
+    if (self.initialized == initialized) {
+        return;
+    }
+
+    if (initialized == NO) {
+        self.pagingEnabled = NO;
+        self.delegate = nil;
+        self.pagingState.page = -1;
+        self.pagingState.numberOfPages = -1;
+    } else {
+        for (UIView *view in [self subviews]) {
+            NSInteger tag = view.tag - PAGE_TAG;
+            if (tag >= 0) {
+                [view removeFromSuperview];
+                if ([self.pagingDelegate respondsToSelector:@selector(scrollView:didRemoveViewForPage:)]) {
+                    [self.pagingDelegate scrollView:self didRemoveViewForPage:tag];
+                }
+            }
+        }
+        self.contentSize = CGSizeMake(self.frame.size.width * (self.numberOfPages > 1 ? 3 : 1), self.frame.size.height);
+        self.showsHorizontalScrollIndicator = NO;
+        self.showsVerticalScrollIndicator = NO;
+        self.pagingEnabled = self.numberOfPages > 1;
+        self.delegate = self.numberOfPages > 1 ? self : nil;
+    }
+ 
+    self.pagingState.initialized = initialized;
+}
+
+- (void)setEndlessPaging:(BOOL)endlessPaging {
+    self.pagingState.endlessPaging = endlessPaging;
+}
+
+- (BOOL)endlessPaging {
+    return self.pagingState.endlessPaging;
+}
+
+- (NSInteger)previousPage {
+    if (self.page == 0) {
+        return self.endlessPaging ? self.numberOfPages - 1 : -1;
+    }
+    return self.page - 1;
+}
+
+- (NSInteger)nextPage {
+    if (self.page == self.numberOfPages - 1) {
+        return self.endlessPaging ? 0 : -1;
+    }
+    return self.page + 1;
+}
+
+- (char)position {
+    return self.pagingState.position;
+}
+
+- (void)setPosition:(char)position {
+    self.pagingState.position = position;
+    CGRect frame = self.frame;
+    frame.origin.x = frame.size.width * position;
+    frame.origin.y = 0;
+    [self scrollRectToVisible:frame animated:NO];
+}
+
+- (int) page {
+    return self.pagingState.page;
+}
+
+- (void)reloadPages {
+    NSInteger page = self.page;
+    self.initialized = NO;
+    if (page < self.numberOfPages) {
+        self.page = page;
+    }
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)sender {
-  if (_pagingInitialized == NO) {
-    return;
-  }
-  
-  double fractpart, intpart;
-  fractpart = modf(self.contentOffset.x / self.frame.size.width, &intpart);
-  
-  if (intpart != 1.0) {
-    if (fractpart < 0.1) {
-      intpart < 1.0 ? (self.page = _prevPage) : (self.page = _nextPage);
-    }
-  } else if (_numberOfPages == 2) {
-    if (fractpart > 0.01 && _nextPageVisible == NO) {
-      [self loadPage:_nextPage atPosition:2];
-      _nextPageVisible = YES;
-    }
-  }
-}
-
-- (int)page {
-  return _page;
-}
-
-- (void)setPage:(int)page {
-  if (page == _page) {
-    return;
-  }
-  
-  if (_pagingInitialized == NO) {
-    _numberOfPages = [_pagingDelegate numberOfPagesInScrollView:self];
+    double scrollPosition = self.contentOffset.x / self.frame.size.width;
     
-    if (_numberOfPages > 1) {
-      self.pagingEnabled = YES;
-      self.contentSize = CGSizeMake(self.frame.size.width * 3, self.frame.size.height);
+    if (self.position == 1) {
+        if (scrollPosition == 2.0) {
+            self.page = self.nextPage; //         0   1 > 2
+        } else if (scrollPosition == 0.0) {
+            self.page = self.previousPage; //     0 < 1   2
+            
+        } else if (self.pagingState.previousPageVisible == NO && self.previousPage == self.nextPage && scrollPosition < 1.0) {
+            [self addViewForPage:self.previousPage atPosition:0];
+            self.pagingState.previousPageVisible = YES;
+        }
+    
+    } else if (scrollPosition == 1.0) {
+        if (self.position == 0) {
+            self.page = self.nextPage; //         0 > 1   2
+        } else if (self.position == 2) {
+            self.page = self.previousPage; //     0   1 < 2
+        }
+    }
+}
+
+- (void)setPage:(NSInteger)page {
+    if (self.page == page) {
+        return;
+    }
+    
+    if (!self.initialized) {
+        self.initialized = YES;
+    }
+    
+    if (self.numberOfPages == 0) {
+        return;
+    }
+    
+    self.pagingState.page = page;
+    
+    for (UIView *view in [self subviews]) {
+        NSInteger tag = view.tag - PAGE_TAG;
+        if (tag != self.page && tag != self.previousPage && tag != self.nextPage) {
+            [view removeFromSuperview];
+            if ([self.pagingDelegate respondsToSelector:@selector(scrollView:didRemoveViewForPage:)]) {
+                [self.pagingDelegate scrollView:self didRemoveViewForPage:tag];
+            }
+        }
+    }
+    
+    if (self.page == 0 && self.previousPage == -1) {
+        self.position = 0;
+        [self addViewForPage:self.page atPosition:0];
+        [self addViewForPage:self.nextPage atPosition:1];
+    } else if (self.page == self.numberOfPages - 1 && self.nextPage == -1) {
+        self.position = 2;
+        [self addViewForPage:self.page atPosition:2];
+        [self addViewForPage:self.previousPage atPosition:1];
     } else {
-      self.pagingEnabled = NO;
+        self.position = 1;
+        [self addViewForPage:self.page atPosition:1];
+        [self addViewForPage:self.previousPage atPosition:0];
+        [self addViewForPage:self.nextPage atPosition:2];
+        if (self.previousPage == self.nextPage) {
+            self.pagingState.previousPageVisible = NO;
+        }
     }
-    _pagingInitialized = YES;
-  }
-  
-  if (_numberOfPages == 0) {
-    return;
-  }
-
-  _page = page;
-  _prevPage = _page - 1 < 0 ? _numberOfPages - 1 : _page - 1;
-  _nextPage = _page + 1 == _numberOfPages ? 0 : _page + 1;
-  
-  for (UIView *view in [self subviews]) {
-    int tag = view.tag - PAGE_TAG;
-    if (tag != _page && tag != _prevPage && tag != _nextPage) {
-      [view removeFromSuperview];
-      if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidUnload:)]) {
-        [_pagingDelegate scrollView:self pageDidUnload:tag];
-      }
+    
+    if ([self.pagingDelegate respondsToSelector:@selector(scrollView:didChangePage:)]) {
+        [self.pagingDelegate scrollView:self didChangePage:self.page];
     }
-  }
-  
-  if (_numberOfPages == 1) {
-    [self loadPage:_page atPosition:0];
-  
-  } else if (_numberOfPages == 2) {
-    [self loadPage:_prevPage atPosition:0];
-    [self loadPage:page atPosition:1];
-    _nextPageVisible = NO;
-  
-  } else {
-    [self loadPage:_prevPage atPosition:0];
-    [self loadPage:_nextPage atPosition:2];
-    [self loadPage:_page atPosition:1];
-  }
-  
-  CGRect frame = self.frame;
-  frame.origin.x = frame.size.width;
-  frame.origin.y = 0;
-  [self scrollRectToVisible:frame animated:NO];
-  
-  if ([_pagingDelegate respondsToSelector:@selector(scrollView:pageDidChange:)]) {
-    [_pagingDelegate scrollView:self pageDidChange:page];
-  }
 }
 
-- (void)loadPage:(int)page atPosition:(int)position {
-  int tag =  page + PAGE_TAG;
-  UIView *view = [self viewWithTag:tag];
-  if (!view) {
-    view = [_pagingDelegate scrollView:self viewForPage:page];
-    view.tag = tag;
-    [self addSubview:view];
-  }
-  
-  CGRect frame = self.frame;
-  frame.origin.x = frame.size.width * position;
-  frame.origin.y = 0;
-  view.frame = frame;
+- (void)addViewForPage:(NSInteger)page atPosition:(char)position {
+    if (page == -1) {
+        return;
+    }
+    
+    int tag =    page + PAGE_TAG;
+    UIView *view = [self viewWithTag:tag];
+    if (!view) {
+        view = [self.pagingDelegate scrollView:self viewForPage:page];
+        view.tag = tag;
+        [self addSubview:view];
+    }
+    
+    CGRect frame = self.frame;
+    frame.origin.x = frame.size.width * position;
+    frame.origin.y = 0;
+    view.frame = frame;
 }
-
 @end
