@@ -1,4 +1,4 @@
-<img src="http://dl.dropbox.com/u/5671499/github/fxpaging.png" />
+<img src="http://dl.dropbox.com/u/5671499/github/fxpage.png" />
 
 # FXPaging
 
