@@ -1,4 +1,4 @@
-<img src="http://dl.dropbox.com/u/5671499/github/fxpage.png" />
+<img src="http://dl.dropbox.com/u/5671499/github/fxpager.png" />
 
 # FXPaging
 
@@ -18,10 +18,10 @@ scrollView.page = 0;
 then implement the delegate methods:
 
 ```objc
-- (UIView *)scrollView:(UIScrollView *)scrollView viewForPage:(int)page {
+- (UIView *)scrollView:(UIScrollView *)scrollView viewForPage:(NSInteger)page {
 	// returns view for a page 
 }
-- (int)numberOfPagesInScrollView:(UIScrollView *)scrollView {
+- (NSInteger)numberOfPagesInScrollView:(UIScrollView *)scrollView {
     // returns number of pages
 }
 ```
