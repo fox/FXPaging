@@ -1,3 +1,5 @@
+<img src="http://dl.dropbox.com/u/5671499/github/fxpaging.png" />
+
 # FXPaging
 
 FXPaging is a tiny iOS libray for doing horizontal paging. All it needs is a `UISCrollView` and a delegate to handle page creation. It's fast and memory efficient, and should work seamlessly with any number of pages.
