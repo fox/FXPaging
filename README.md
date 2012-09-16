@@ -25,3 +25,9 @@ then implement the delegate methods:
     // returns number of pages
 }
 ```
+
+## Tips
+
+* To enable endless scrolling set `scrollView.endlessPaging = YES;` during setup.
+* FXPaging keeps references to current and surrounding (previous / next) page views and releases them once they're no longer visible to the user. When that happens, delegates receive call to `scrollView:didRemoveViewForPage:` where they can do additional cleanup (i.e. remove reference to that view owner).
+* Since views are kept only when needed, a subsequent call to `scrollView:viewForPage:` could be made. Which means if you'd like to persist views across pages, just make that method return same view instance for that particular page.
