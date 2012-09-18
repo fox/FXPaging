@@ -33,4 +33,4 @@ then implement the delegate methods:
 * Since views are kept only when needed, a subsequent calls to `scrollView:viewForPage:` could be made. Meaning if you'd like to persist views across pages, make sure that method returns the same view instance for that particular page and don't do any cleanup in `scrollView:didRemoveViewForPage`. Beware of memory usage when dealing with large number of pages. 
 * If you change number of pages after the initialization, call `scrollView.reloadPages` to make the change visible. 
 * `scrollView.reloadPages` will also release and redraw the currently visible page so you might want to call that if you want to provide a different view for a current page.
-* Halfway to page a `scrollView:isHalfwayToPage:` delegate method is called. When the page is entirely visible `scrollView:didChangePage:` is called. You could either to setup current page indicator, for example using a Page Control view.
+* Halfway to page a `scrollView:isHalfwayToPage:` delegate method is called. When the page is entirely visible `scrollView:didChangePage:` is called. You could use either to setup current page indicator, for example using a Page Control view.
