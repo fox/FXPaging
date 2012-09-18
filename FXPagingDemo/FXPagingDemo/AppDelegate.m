@@ -93,6 +93,10 @@
     NSLog(@"Removed view for page %d", page);
 }
 
+- (void) scrollView:(UIScrollView *)scrollView isHalfwayToPage:(NSInteger)page {
+    NSLog(@"We're halfway to page %d", page);
+}
+
 - (int)numberOfPagesInScrollView:(UIScrollView *)scrollView {
     return 5;
 }

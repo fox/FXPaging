@@ -20,6 +20,9 @@
 @property (nonatomic) BOOL previousPageVisible;
 @property (strong, nonatomic) id<FXPagingDelegate> pagingDelegate;
 @property (nonatomic) BOOL initialized;
+@property (nonatomic) BOOL halfwayForward;
+@property (nonatomic) BOOL halfwayBack;
+@property (nonatomic) double previousScrollPosition;
 @end
 
 @implementation FXPagingState
@@ -30,6 +33,9 @@
 @synthesize previousPageVisible;
 @synthesize pagingDelegate;
 @synthesize initialized;
+@synthesize halfwayForward;
+@synthesize halfwayBack;
+@synthesize previousScrollPosition;
 
 - (id)init {
     self = [super init];
@@ -171,17 +177,37 @@ static char pagingStateKey;
 - (void)scrollViewDidScroll:(UIScrollView *)sender {
     double scrollPosition = self.contentOffset.x / self.frame.size.width;
     
+    if ([self.pagingDelegate respondsToSelector:@selector(scrollView:isHalfwayToPage:)]) {
+        double fractpart, intpart;
+        NSInteger destinationPage = -1;
+        fractpart = modf(scrollPosition, &intpart);
+        
+        BOOL movingForward = scrollPosition > self.pagingState.previousScrollPosition;
+        if (movingForward && fractpart > 0.5 && self.pagingState.halfwayForward == NO) {
+            self.pagingState.halfwayBack = NO;
+            self.pagingState.halfwayForward = YES;
+            destinationPage = self.position < scrollPosition ? self.nextPage : self.page;
+        } else if (movingForward == NO && fractpart > 0.2 && fractpart < 0.5 && self.pagingState.halfwayBack == NO) {
+            self.pagingState.halfwayBack = YES;
+            self.pagingState.halfwayForward = NO;
+            destinationPage = self.position > scrollPosition ? self.previousPage : self.page;
+        }
+        if (destinationPage != -1) {
+            [self.pagingDelegate scrollView:self isHalfwayToPage:destinationPage];
+        }
+        
+        self.pagingState.previousScrollPosition = scrollPosition;
+    }
+    
     if (self.position == 1) {
         if (scrollPosition == 2.0) {
             self.page = self.nextPage; //         0   1 > 2
         } else if (scrollPosition == 0.0) {
             self.page = self.previousPage; //     0 < 1   2
-            
         } else if (self.pagingState.previousPageVisible == NO && self.previousPage == self.nextPage && scrollPosition < 1.0) {
             [self addViewForPage:self.previousPage atPosition:0];
             self.pagingState.previousPageVisible = YES;
         }
-    
     } else if (scrollPosition == 1.0) {
         if (self.position == 0) {
             self.page = self.nextPage; //         0 > 1   2
@@ -205,6 +231,9 @@ static char pagingStateKey;
     }
     
     self.pagingState.page = page;
+    self.pagingState.halfwayBack = NO;
+    self.pagingState.halfwayForward = NO;
+    
     
     for (UIView *view in [self subviews]) {
         NSInteger tag = view.tag - PAGE_TAG;
@@ -244,7 +273,7 @@ static char pagingStateKey;
         return;
     }
     
-    int tag =    page + PAGE_TAG;
+    int tag = page + PAGE_TAG;
     UIView *view = [self viewWithTag:tag];
     if (!view) {
         view = [self.pagingDelegate scrollView:self viewForPage:page];

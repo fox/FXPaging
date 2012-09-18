@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FXPagingDelegate.h"
+
+@protocol FXPagingDelegate;
 
 @interface UIScrollView (FXPaging) <UIScrollViewDelegate>
 @property (strong, nonatomic) id<FXPagingDelegate> pagingDelegate;

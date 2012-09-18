@@ -15,4 +15,5 @@
 @optional
 - (void) scrollView:(UIScrollView *)scrollView didRemoveViewForPage:(NSInteger)page;
 - (void) scrollView:(UIScrollView *)scrollView didChangePage:(NSInteger)page;
+- (void) scrollView:(UIScrollView *)scrollView isHalfwayToPage:(NSInteger)page;
 @end
