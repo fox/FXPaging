@@ -2,7 +2,7 @@
 
 # FXPaging
 
-FXPaging is an iOS libray for doing horizontal paging. All it needs is a `FXPagingView` and a delegate to handle page creation. It's fast and memory efficient, and should work seamlessly with any number of pages.
+FXPaging is an iOS libray for doing horizontal paging. All it needs is a view and a delegate to handle page creation. It's fast and memory efficient, and should work seamlessly with any number of pages.
 
 ## Usage
 
@@ -22,13 +22,13 @@ then implement the delegate methods:
 	// returns view for a page 
 }
 - (NSInteger)numberOfPagesInPagingView:(FXPagingView *)pagingView {
-    // returns number of pages
+    // number of pages
 }
 ```
 
 ## Tips
 
-* To enable endless scrolling, set `pagingView.endlessPaging = YES;` during setup.
+* To enable endless scrolling, set `pagingView.endless = YES;`.
 * FXPaging keeps references to current and surrounding (previous / next) page views and releases them once they are no longer visible to the user. When that happens, delegates receive `pagingView:didRemoveViewForPage:` message so they can do additional cleanup (like remove reference to that view owner).
 * Since views are kept only when needed, a subsequent calls to `pagingView:viewForPage:` could be made. If you'd like to persist views across pages, make sure that method returns the same view instance for the particular page, and don't do any cleanup in `pagingView:didRemoveViewForPage`. Beware of memory usage when dealing with large number of pages. 
 * If you change number of pages after the initialization, call `pagingView.reloadPages` to make the change visible. 
