@@ -8,12 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
+@class FXPagingView;
+
 @protocol FXPagingDelegate<NSObject>
-@required
-- (NSInteger) numberOfPagesInScrollView:(UIScrollView *) scrollView;
-- (UIView *) scrollView:(UIScrollView *) scrollView viewForPage:(NSInteger)page;
-@optional
-- (void) scrollView:(UIScrollView *)scrollView didRemoveViewForPage:(NSInteger)page;
-- (void) scrollView:(UIScrollView *)scrollView didChangePage:(NSInteger)page;
-- (void) scrollView:(UIScrollView *)scrollView isHalfwayToPage:(NSInteger)page;
+- (NSInteger)numberOfPagesInPagingView:(FXPagingView *)pagingView;
+- (UIView *)pagingView:(FXPagingView *)pagingView viewForPage:(NSInteger)page;
+- (void)pagingView:(FXPagingView *)pagingView didChangePage:(NSInteger)page;
+- (void)pagingView:(FXPagingView *)pagingView didRemoveViewForPage:(NSInteger)page;
 @end

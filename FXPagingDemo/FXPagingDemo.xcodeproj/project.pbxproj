@@ -13,7 +13,7 @@
 		5AAF7B2615FE607800D2F025 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5AAF7B2415FE607800D2F025 /* InfoPlist.strings */; };
 		5AAF7B2815FE607800D2F025 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5AAF7B2715FE607800D2F025 /* main.m */; };
 		5AAF7B2C15FE607800D2F025 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5AAF7B2B15FE607800D2F025 /* AppDelegate.m */; };
-		5AED117A15FE6B1300F99678 /* UIScrollView+FXPaging.m in Sources */ = {isa = PBXBuildFile; fileRef = 5AED117915FE6B1300F99678 /* UIScrollView+FXPaging.m */; };
+		5AED117A15FE6B1300F99678 /* FXPagingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5AED117915FE6B1300F99678 /* FXPagingView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,8 +28,8 @@
 		5AAF7B2A15FE607800D2F025 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		5AAF7B2B15FE607800D2F025 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		5AAF7B3215FE60A900D2F025 /* FXPagingDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FXPagingDelegate.h; path = ../../FXPagingDelegate.h; sourceTree = "<group>"; };
-		5AED117815FE6B1300F99678 /* UIScrollView+FXPaging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIScrollView+FXPaging.h"; path = "../../UIScrollView+FXPaging.h"; sourceTree = "<group>"; };
-		5AED117915FE6B1300F99678 /* UIScrollView+FXPaging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIScrollView+FXPaging.m"; path = "../../UIScrollView+FXPaging.m"; sourceTree = "<group>"; };
+		5AED117815FE6B1300F99678 /* FXPagingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FXPagingView.h; path = ../../FXPagingView.h; sourceTree = "<group>"; };
+		5AED117915FE6B1300F99678 /* FXPagingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FXPagingView.m; path = ../../FXPagingView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,8 +80,8 @@
 				5AAF7B2B15FE607800D2F025 /* AppDelegate.m */,
 				5AAF7B2215FE607800D2F025 /* Supporting Files */,
 				5AAF7B3215FE60A900D2F025 /* FXPagingDelegate.h */,
-				5AED117815FE6B1300F99678 /* UIScrollView+FXPaging.h */,
-				5AED117915FE6B1300F99678 /* UIScrollView+FXPaging.m */,
+				5AED117815FE6B1300F99678 /* FXPagingView.h */,
+				5AED117915FE6B1300F99678 /* FXPagingView.m */,
 			);
 			path = FXPagingDemo;
 			sourceTree = "<group>";
@@ -161,7 +161,7 @@
 			files = (
 				5AAF7B2815FE607800D2F025 /* main.m in Sources */,
 				5AAF7B2C15FE607800D2F025 /* AppDelegate.m in Sources */,
-				5AED117A15FE6B1300F99678 /* UIScrollView+FXPaging.m in Sources */,
+				5AED117A15FE6B1300F99678 /* FXPagingView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -185,6 +185,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
@@ -211,6 +212,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;

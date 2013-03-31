@@ -7,15 +7,9 @@
 //
 
 #import "AppDelegate.h"
-#import "UIScrollView+FXPaging.h"
+#import "FXPagingView.h"
 
 @implementation AppDelegate
-
-- (void)dealloc
-{
-    [_window release];
-    [super dealloc];
-}
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
@@ -46,18 +40,16 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
-    // Override point for customization after application launch.
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor blackColor];
     
-    UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:self.window.frame];
-    scrollView.pagingDelegate = self;
-    scrollView.endlessPaging = NO;
-    scrollView.page = 0;
+    FXPagingView* pagingView = [[FXPagingView alloc] initWithFrame:self.window.frame];
     
-    [self.window addSubview:scrollView];
+    pagingView.pagingDelegate = self;
+    pagingView.endless = NO;
+    pagingView.page = 0;
     
-    [scrollView release];
+    [self.window addSubview:pagingView];
     [self.window makeKeyAndVisible];
     
     return YES;
@@ -65,39 +57,39 @@
 
 #pragma mark FXPagingDelegate methods
 
-- (UIView *)scrollView:(UIScrollView *)scrollView viewForPage:(int)page {
+- (UIView *)pagingView:(FXPagingView *)pagingView viewForPage:(NSInteger)page
+{
     NSLog(@"Loading page %d", page);
     
-    NSArray *colorList = [[[NSArray alloc] initWithObjects:[UIColor redColor], [UIColor greenColor], [UIColor magentaColor],
-                             [UIColor blueColor], [UIColor orangeColor], [UIColor brownColor], [UIColor grayColor], nil] autorelease];
+    NSArray *colorList = [[NSArray alloc] initWithObjects:[UIColor redColor], [UIColor greenColor], [UIColor magentaColor],
+                             [UIColor blueColor], [UIColor orangeColor], [UIColor brownColor], [UIColor grayColor], nil];
     
-    UIView *pageView = [[[UIView alloc] initWithFrame:self.window.frame] autorelease];
-    pageView.backgroundColor = [colorList objectAtIndex:page % [colorList count]];
+    UIView *view = [[UIView alloc] initWithFrame:self.window.frame];
+    view.backgroundColor = [colorList objectAtIndex:page % [colorList count]];
     
-    UILabel *label = [[[UILabel alloc] initWithFrame:self.window.frame] autorelease];
+    UILabel *label = [[UILabel alloc] initWithFrame:self.window.frame];
     [label setTextAlignment:UITextAlignmentCenter];
     [label setTextColor:[UIColor blackColor]];
     [label setBackgroundColor:[UIColor clearColor]];
     [label setText:[NSString stringWithFormat:@"Page %d", page]];
     
-    [pageView addSubview:label];
+    [view addSubview:label];
     
-    return pageView;
+    return view;
 }
 
-- (void)scrollView:(UIScrollView *)scrollView didChangePage:(NSInteger)page {
+- (void)pagingView:(FXPagingView *)pagingView didChangePage:(NSInteger)page
+{
     NSLog(@"Page is now %d", page);
 }
 
-- (void)scrollView:(UIScrollView *)scrollView didRemoveViewForPage:(NSInteger)page {
+- (void)pagingView:(FXPagingView *)pagingView didRemoveViewForPage:(NSInteger)page
+{
     NSLog(@"Removed view for page %d", page);
 }
 
-- (void) scrollView:(UIScrollView *)scrollView isHalfwayToPage:(NSInteger)page {
-    NSLog(@"We're halfway to page %d", page);
-}
-
-- (int)numberOfPagesInScrollView:(UIScrollView *)scrollView {
+- (NSInteger)numberOfPagesInPagingView:(FXPagingView *)pagingView
+{
     return 5;
 }
 
