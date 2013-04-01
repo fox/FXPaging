@@ -43,21 +43,20 @@
 }
 
 
-- (NSInteger)previousPage
-{
-    if ([self isEndless] && self.page == 0) {
-        return self.numberOfPages - 1;
-    }
-    return self.page - 1;
+- (NSInteger)previousPage {
+  if (self.page == 0) {
+    return [self isEndless] ? self.numberOfPages - 1 : -1;
+  }
+  return self.page - 1;
 }
 
-- (NSInteger)nextPage
-{
-    if ([self isEndless] && self.page == self.numberOfPages - 1) {
-        return 0;
-    }
-    return self.page + 1;
+- (NSInteger)nextPage {
+  if (self.page == self.numberOfPages - 1) {
+    return [self isEndless] ? 0 : -1;
+  }
+  return self.page + 1;
 }
+
 
 - (void)setPosition:(char)position {
     _position = position;
